@@ -10,6 +10,7 @@ local setmetatable = setmetatable
 local print = print
 local assert = assert
 local math = require "math"
+local ipairs = ipairs
 --
 -- 
 --
@@ -76,18 +77,23 @@ function Board:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self  -- 没有在对象中找到条目时, 从元表中找它
-    for i = 1, self.width*self.height do
-        self.data[i] = 0
-    end
-    assert(#self.data == 64)
+    self:resetData()
     return o
 end
 
+function Board:resetData()
+    for i = 1, self.width*self.height do
+        self.data[i] = 0
+    end  
+end
 function Board:setWidth(val)
-    print('a')
+    self.width = val
+    self:resetData()
 end
 
 function Board:setHeight(val)
+    self.height = val
+    self:resetData()
 end
 
 
@@ -116,25 +122,29 @@ function IndexToXY(index, width)
     return (index-1)%width, math.floor((index-1)/width)
 end
 
+
+function Board:_debug_print_data()
+    print("========_debug_print_data========")
+    str = ""
+    for i,v in ipairs(self.data) do
+        str = str..v
+        if (i % self.width == 0) then
+            print(str)
+            str = ""
+        end
+    end
+end
+
 function Board:AddBlock(block)
     for i=1,16 do
         x, y = IndexToXY(i, 4)
-        -- print("i:"..i.." x:"..x.." y:"..y)
         if Blocks[block.Type].data[block.CurState][i] == 1 then
             self.data[XYtoIndex(block.x+x, block.y+y, self.width)] = 1
-            -- print(XYtoIndex(block.x+x, block.y+y, self.width))
         end
     end
 
-    str = ''
-    for i = 1, self.width*self.height do
-        if (i % self.width == 1) and #str > 0 then
-            -- print(str)
-            str = ""
-        end        
-        str = str..self.data[i]
-    end
-    print(str)
+    self:_debug_print_data()
+
 end
 
 function Board:isSolid(x, y)
@@ -157,6 +167,7 @@ function Board:CheckPolish()
     return ret
 end
 
+-- 返回可消除的行数(从0开始)
 function Board:CheckPolish2()
     function isLineCanPolish(b, line, width)
         for i = line * width + 1, line * width + width do
