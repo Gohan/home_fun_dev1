@@ -101,8 +101,8 @@ function Board:isAvailableBlock(block)
     return false
 end
 
-function Board:getBlockData()
-
+function Board:GetBlockData()
+    return self.data
 end
 --[[
 1~64
