@@ -16,9 +16,20 @@ local ipairs = ipairs
 --
 setfenv(1, M)
 
+
+local BlockType = {
+    ['棒棒'] = 1, 
+    ['田格'] = 2, 
+    ['T型'] = 3, 
+    ['左拐弯'] = 4,
+    ['右拐弯'] = 5, 
+    ['左Z'] = 6, 
+    ['右Z'] = 7
+}
+
 local Blocks = {
     {
-        desc = "a",
+        desc = "棒棒",
         data = {
             {0,1,0,0,
             0,1,0,0,
@@ -285,10 +296,26 @@ Block =
     x = 0;
     y = 0;
 }
-function Block:new(o)
-    o = o or {}
+function Block:new(name, state, x, y)
+    o = {}
     setmetatable(o, self)
     self.__index = self  -- 没有在对象中找到条目时, 从元表中找它
+    
+    o.Type = BlockType[name]
+    if o.Type == nil then
+        return
+    end
+
+    local StateCount = #Blocks[o.Type].data
+    if StateCount == 0 then
+        return
+    end
+
+    print(name)
+    print(state)
+    o.CurState = state % StateCount + 1
+    o.x = x
+    o.y = y
     return o
 end
 
@@ -301,7 +328,9 @@ function Block:getTurn(direction)
 end
 
 function Block:setTurn(direction)
-
 end
 
+function Block:GetBlockData()
+    return Blocks[self.Type].data[self.CurState]
+end
 return M

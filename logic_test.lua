@@ -34,7 +34,7 @@ function test_add_block()
 	b:SetWidth(8)
 	b:SetHeight(8)
     view:SetBoard(b)
-	local block = mod.Block:new()
+	local block = mod.Block:new("棒棒", 1, 0, 0)
 	block.Type = 1
 	block.CurState = 1
     block.x = 0
@@ -186,4 +186,39 @@ function test_remove_full_line()
              1,1,1,1,1,1,0,0}))
 
 end
+
+
+function test_block_rotate()
+    local logic_mod = require "logic"
+    -- 创建x=3, y=0的棒棒形状
+    local block1 = logic_mod.Block:new('棒棒', 0, 3, 0);
+    assert(block_equal(block1:GetBlockData(), 
+           {0,1,0,0,
+            0,1,0,0,
+            0,1,0,0,
+            0,1,0,0}
+        ))
+
+    local block1_rotate_left = block1:TurnLeft()
+    local block1_rotate_right = block1:TurnRight()
+
+    assert(block_equal(block1_rotate_left:GetBlockData(), 
+           block1_rotate_right:GetBlockData()));
+
+    assert(block_equal(block1:GetBlockData(), 
+            {0,0,0,0,
+            1,1,1,1,
+            0,0,0,0,
+            0,0,0,0}
+        ))
+
+    local block1_rotate_4times = block1:TurnLeft():TurnLeft():TurnLeft():TurnLeft()
+    assert(block_equal(block1:GetBlockData(), 
+           block1_rotate_4times:GetBlockData()));  
+end
+
+function test_board_collision()
+
+end
+
 
