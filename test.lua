@@ -29,8 +29,8 @@ end
 function test_add_block()
 	local mod = require "logic"
 	local b = mod.Board:new()
-	b:setWidth(8)
-	b:setHeight(8)
+	b:SetWidth(8)
+	b:SetHeight(8)
 	local block = mod.Block:new()
 	block.Type = 1
 	block.CurState = 1

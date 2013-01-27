@@ -77,33 +77,30 @@ function Board:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self  -- 没有在对象中找到条目时, 从元表中找它
-    self:resetData()
+    self:_reset_data()
     return o
 end
 
-function Board:resetData()
-    for i = 1, self.width*self.height do
-        self.data[i] = 0
-    end  
-end
-function Board:setWidth(val)
+
+function Board:SetWidth(val)
     self.width = val
-    self:resetData()
+    self:_reset_data()
 end
 
-function Board:setHeight(val)
+function Board:SetHeight(val)
     self.height = val
-    self:resetData()
+    self:_reset_data()
 end
 
 
-function Board:isAvailableBlock(block)
+function Board:IsAvailableBlock(block)
     return false
 end
 
 function Board:GetBlockData()
     return self.data
 end
+
 --[[
 1~64
 
@@ -135,6 +132,12 @@ function Board:_debug_print_data()
     end
 end
 
+function Board:_reset_data()
+    for i = 1, self.width*self.height do
+        self.data[i] = 0
+    end  
+end
+
 function Board:AddBlock(block)
     for i=1,16 do
         x, y = IndexToXY(i, 4)
@@ -147,7 +150,7 @@ function Board:AddBlock(block)
 
 end
 
-function Board:isSolid(x, y)
+function Board:IsSolid(x, y)
     -- print('solid'..XYtoIndex(x, y, self.width))
     return self.data[XYtoIndex(x, y, self.width)] == 1
 end
