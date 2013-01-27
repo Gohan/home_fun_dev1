@@ -1,8 +1,8 @@
 local require = require
-require "lunit"
 local print = print
 local ipairs = ipairs
-module( "my_testcase", lunit.testcase )
+require "lunit"
+module( "logic_test", lunit.testcase )
 
 function block_equal(left, right)
     if (#left ~= #right) then
@@ -22,7 +22,7 @@ end
 
 function test_create_board()
     local mod = require "logic"
-    b = mod.Board:new()
+    local b = mod.Board:new()
     assert(b ~= nil)
 end
 
@@ -128,3 +128,62 @@ function test_add_block()
     assert(not b:isSolid(1,2))
     assert(not b:isSolid(1,3))]]
 end
+
+
+function test_remove_full_line()
+    local logic_mod = require "logic"
+    local board = logic_mod.Board:new()
+
+    board:SetWidth(8)
+    board:SetHeight(8)
+
+    board:AddBlockByData(
+            {0,0,0,0,0,0,0,0,
+             0,0,0,0,0,0,0,0,
+             0,0,0,0,0,0,0,0,
+             0,0,0,0,0,0,0,0,
+             1,1,1,1,1,1,1,1,
+             1,1,1,1,1,1,0,0,
+             1,1,1,1,1,1,1,1,
+             1,1,1,1,1,1,1,1})
+
+    assert(board:HasFullLine())
+
+    board:RemoveFullLine3()
+    assert(block_equal(board:GetBlockData(), 
+            {0,0,0,0,0,0,0,0,
+             0,0,0,0,0,0,0,0,
+             0,0,0,0,0,0,0,0,
+             0,0,0,0,0,0,0,0,
+             0,0,0,0,0,0,0,0,
+             0,0,0,0,0,0,0,0,
+             0,0,0,0,0,0,0,0,
+             1,1,1,1,1,1,0,0}))
+
+    board:_reset_data()
+
+    board:AddBlockByData(
+        {1,1,0,0,0,0,0,0, 
+         1,1,0,0,0,0,0,0, 
+         1,1,1,1,1,1,1,1,
+         0,0,0,0,0,0,1,1, 
+         0,0,0,0,0,0,1,1,
+         1,1,1,1,1,1,0,0, 
+         1,1,1,1,1,1,1,1,
+         1,1,1,1,1,1,1,1})
+
+    assert(board:HasFullLine())
+
+    board:RemoveFullLine3()
+    assert(block_equal(board:GetBlockData(), 
+            {0,0,0,0,0,0,0,0,
+             0,0,0,0,0,0,0,0,
+             0,0,0,0,0,0,0,0,
+             1,1,0,0,0,0,0,0,
+             1,1,0,0,0,0,0,0,
+             0,0,0,0,0,0,1,1,
+             0,0,0,0,0,0,1,1,
+             1,1,1,1,1,1,0,0}))
+
+end
+

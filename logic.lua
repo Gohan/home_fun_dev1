@@ -16,8 +16,6 @@ local ipairs = ipairs
 --
 setfenv(1, M)
 
-
-
 local Blocks = {
     {
         desc = "a",
@@ -72,6 +70,9 @@ Board = {
     data = {},
     width = 8,
     height = 8,
+    config = {
+        ["debug_output"] = true,
+    },
 }
 function Board:new(o)
     o = o or {}
@@ -101,14 +102,78 @@ function Board:GetBlockData()
     return self.data
 end
 
+function Board:RemoveFullLine()
+    local baseline = self.height-1
+    for k = self.height-1, 0, -1 do
+        if not self:_is_line_full(k, self.width) and k ~= self.height then
+            self:MoveLine(k, baseline)
+            baseline = baseline - 1
+        end
+    end
+
+    for i = baseline, 0, -1 do
+        self:ResetLine(i)
+    end
+
+    self:_debug_print_data()
+end
+
+function Board:MoveLine( srcline, dstline )
+    local width = self.width
+    for i = 1, width do
+        self.data[dstline * width + i] = self.data[srcline * width + i] 
+    end
+end
+
+function Board:ResetLine(line)
+    local width = self.width
+    for i = line * width + 1, line * width + width do
+        self.data[i] = 0 
+    end
+end
+
+function Board:MoveDown(line, count)
+    local width = self.width
+    for i = line * width + 1, line * width + width do
+        self.data[i+count*width] = self.data[i]
+    end
+end
+
+function Board:RemoveFullLine2()
+    local move_down_count = 0
+    polish_lines = self:CheckPolish2()
+    local index = #polish_lines; 
+    for i = self.height-1, 0, -1 do
+        if (i == polish_lines[index]) then -- 这行当然就是消除行, 不去处理
+            index = index - 1
+            move_down_count = move_down_count + 1
+            self:ResetLine(i)
+        elseif move_down_count > 0 then
+            self:MoveDown(i, move_down_count)
+            self:ResetLine(i)
+        end
+    end
+    self:_debug_print_data()
+end
+
+function Board:RemoveFullLine3()
+    local move_down_count = 0
+    for i = self.height-1, 0, -1 do
+        if (self:_is_line_full(i, self.width)) then -- 这行当然就是消除行, 不去处理
+            move_down_count = move_down_count + 1
+            self:ResetLine(i)
+        elseif move_down_count > 0 then
+            self:MoveDown(i, move_down_count)
+            self:ResetLine(i)
+        end
+    end
+    self:_debug_print_data()
+end
+
 --[[
 1~64
 
 2, 10, 18, 26
-
-
-
-
 ]]
 
 function XYtoIndex(x, y, width)
@@ -121,6 +186,10 @@ end
 
 
 function Board:_debug_print_data()
+    if (self.config["debug_output"] ~= true) then
+        return
+    end
+
     print("========_debug_print_data========")
     str = ""
     for i,v in ipairs(self.data) do
@@ -130,12 +199,33 @@ function Board:_debug_print_data()
             str = ""
         end
     end
+    print("========_debug_print_data (end)========")
 end
 
 function Board:_reset_data()
     for i = 1, self.width*self.height do
         self.data[i] = 0
     end  
+end
+
+function Board:_is_line_full(line, width)
+    for i = line * width + 1, line * width + width do
+        if self.data[i] == 0 then
+            return false
+        end
+    end
+    return true
+end
+
+function Board:HasFullLine()
+    local ret = false
+    for i = 0, self.height-1 do
+        if self:_is_line_full(i, self.width) then
+            ret = true
+            break
+        end
+    end
+    return ret
 end
 
 function Board:AddBlock(block)
@@ -147,7 +237,14 @@ function Board:AddBlock(block)
     end
 
     self:_debug_print_data()
+end
 
+function Board:AddBlockByData(data)
+    for i=1, #data do
+        self.data[i] = data[i]
+    end
+
+    self:_debug_print_data()
 end
 
 function Board:IsSolid(x, y)
@@ -172,25 +269,14 @@ end
 
 -- 返回可消除的行数(从0开始)
 function Board:CheckPolish2()
-    function isLineCanPolish(b, line, width)
-        for i = line * width + 1, line * width + width do
-            if b.data[i] == 0 then
-                return false
-            end
-        end
-        return true
-    end
     local ret = {}
     for i = 0, self.height-1 do
-        if isLineCanPolish(self, i, self.width) then
-            ret[#ret+1] = i+1
+        if self:_is_line_full(i, self.width) then
+            ret[#ret+1] = i
         end
     end
     return ret
 end
-
-
-
 
 Block =
 {
