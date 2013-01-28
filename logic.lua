@@ -327,7 +327,17 @@ function Block:GetMove(direction)
     return Block:new(self.name, state, self.x, self.y)
 end
 
-function Block:setTurn(direction)
+function Block:RotateLeft()
+    local n = #Blocks[self.Type].data
+    local state = (self.CurState+n-1)%n
+    return Block:new(self.name, state, self.x, self.y)
+end
+
+
+function Block:RotateRight()
+    local n = #Blocks[self.Type].data
+    local state = (self.CurState+1)%n
+    return Block:new(self.name, state, self.x, self.y)
 end
 
 function Block:GetBlockData()

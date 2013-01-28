@@ -250,14 +250,14 @@ describe("logic_test", function()
         assert.is_true(block_equal(block1_rotate_left:GetBlockData(), 
                block1_rotate_right:GetBlockData()));
 
-        assert.is_true(block_equal(block1:GetBlockData(), 
+        assert.is_true(block_equal(block1_rotate_left:GetBlockData(), 
                 {0,0,0,0,
                 1,1,1,1,
                 0,0,0,0,
                 0,0,0,0}
             ))
 
-        local block1_rotate_4times = block1:TurnLeft():TurnLeft():TurnLeft():TurnLeft()
+        local block1_rotate_4times = block1:RotateLeft():RotateLeft():RotateLeft():RotateLeft()
         assert.is_true(block_equal(block1:GetBlockData(), 
                block1_rotate_4times:GetBlockData()));  
     end)
@@ -279,14 +279,14 @@ describe("logic_test", function()
         assert.is_true(block_equal(block1_rotate_left:GetBlockData(), 
                block1_rotate_right:GetBlockData()));
 
-        assert.is_true(block_equal(block1:GetBlockData(), 
+        assert.is_true(block_equal(block1_rotate_left:GetBlockData(), 
                 {0,0,0,0,
                 1,1,1,1,
                 0,0,0,0,
                 0,0,0,0}
             ))
 
-        local block1_rotate_4times = block1:TurnLeft():TurnLeft():TurnLeft():TurnLeft()
+        local block1_rotate_4times = block1:RotateLeft():RotateLeft():RotateLeft():RotateLeft()
         assert.is_true(block_equal(block1:GetBlockData(), 
                block1_rotate_4times:GetBlockData()));  
     end)
