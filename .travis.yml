@@ -1,0 +1,26 @@
+language: erlang
+
+env:
+  - LUA="lua"
+#  - LUA="luajit"
+
+branches:
+  only:
+    - master
+
+install:
+  - sudo apt-get install lua
+  - sudo apt-get install luarocks
+  - sudo luarocks install luafilesystem
+  - sudo luarocks install busted
+
+script: "busted logic_test.lua"
+
+notifications:
+#  webhooks:
+#    - http://my-url/travis-results
+  recipients:
+    - cppgohan@gmail.com
+  email:
+    on_success: change
+    on_failure: always
