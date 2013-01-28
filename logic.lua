@@ -82,7 +82,7 @@ Board = {
     width = 8,
     height = 8,
     config = {
-        ["debug_output"] = true,
+        ["debug_output"] = false,
     },
 }
 function Board:new(o)
@@ -242,7 +242,7 @@ end
 function Board:AddBlock(block)
     for i=1,16 do
         x, y = IndexToXY(i, 4)
-        if Blocks[block.Type].data[block.CurState][i] == 1 then
+        if Blocks[block.Type].data[block.CurState+1][i] == 1 then
             self.data[XYtoIndex(block.x+x, block.y+y, self.width)] = 1
         end
     end
@@ -311,26 +311,26 @@ function Block:new(name, state, x, y)
         return
     end
 
-    print(name)
-    print(state)
-    o.CurState = state % StateCount + 1
+    o.CurState = state % StateCount
     o.x = x
     o.y = y
     return o
 end
 
-function Block:getTurn(direction)
+function Block:GetMove(direction)
     local n = #Blocks[Type].data
-    if (direction == 'L') then-- 顺时针
-        local b = self.new()
-        return Blocks[Type].data[(self.CurState+1)%n]
+    local state = self.state
+    if (direction == 'L') then state = (state+n-1)%n
+    elseif (direction == 'R') then state = (state+1)%n
     end
+        
+    return Block:new(self.name, state, self.x, self.y)
 end
 
 function Block:setTurn(direction)
 end
 
 function Block:GetBlockData()
-    return Blocks[self.Type].data[self.CurState]
+    return Blocks[self.Type].data[self.CurState+1]
 end
 return M
