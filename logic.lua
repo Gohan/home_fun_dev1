@@ -263,6 +263,15 @@ function Board:IsSolid(x, y)
     return self.data[XYtoIndex(x, y, self.width)] == 1
 end
 
+function Board:IsOutOfRange(x, y)
+    if x >= self.width or x < 0 or 
+       y >= self.height or y < 0 then
+        return true
+    end
+    return false
+    -- body
+end
+
 -- 返回可消除的行数(从0开始)
 function Board:CheckPolish()
     bCanPolish = 1;
@@ -289,12 +298,38 @@ function Board:CheckPolish2()
     return ret
 end
 
+function Board:IsCollisionByBlockData(data, width, x, y)
+    for i=1, #data do
+        if data[i] ~= 0 then
+            dx, dy = IndexToXY(i, width)
+
+            local bx, by = x+dx, y+dy
+            if self:IsOutOfRange(bx, by) then 
+                -- print('collision at x:'..x+dx..' y:'..y+dy..'\n')
+                return true
+            else
+                index = XYtoIndex(x+dx, y+dy, self.width)
+                if self.data[index] ~= 0 then
+                    -- print('collision at x:'..x+dx..' y:'..y+dy..'\n')
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+function Board:IsCollision(block)
+    return self:IsCollisionByBlockData(block:GetBlockData(), block.width, block.x, block.y)
+end
+
 Block =
 {
     CurState = 1;
     Type = 1;
     x = 0;
     y = 0;
+    width = 4;
 }
 function Block:new(name, state, x, y)
     o = {}
@@ -332,7 +367,6 @@ function Block:RotateLeft()
     local state = (self.CurState+n-1)%n
     return Block:new(self.name, state, self.x, self.y)
 end
-
 
 function Block:RotateRight()
     local n = #Blocks[self.Type].data

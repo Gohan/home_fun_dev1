@@ -126,10 +126,10 @@ describe("logic_test", function()
                  1,1,1,1,1,1,1,1,
                  1,1,1,1,1,1,1,1})
 
-        assert(board:HasFullLine())
+        assert.is_true(board:HasFullLine())
 
         board:RemoveFullLine3()
-        assert(block_equal(board:GetBlockData(), 
+        assert.is_true(block_equal(board:GetBlockData(), 
                 {0,0,0,0,0,0,0,0,
                  0,0,0,0,0,0,0,0,
                  0,0,0,0,0,0,0,0,
@@ -265,29 +265,33 @@ describe("logic_test", function()
     it("Board:CheckCollision", function()
         local logic_mod = require "logic"
         -- 创建x=3, y=0的棒棒形状
-        local block1 = logic_mod.Block:new('棒棒', 0, 3, 0);
+
+        local logic_mod = require "logic"
+        local board = logic_mod.Board:new()
+
+        board:SetWidth(8)
+        board:SetHeight(8)
+
+        board:AddBlockByData(
+                {0,0,0,0,0,0,0,0,
+                 0,0,0,0,0,0,0,0,
+                 0,0,0,0,0,0,0,0,
+                 0,0,0,0,0,0,0,0,
+                 1,1,1,1,1,1,0,1,
+                 1,1,1,1,1,1,0,0,
+                 1,1,1,1,1,1,0,1,
+                 1,1,1,1,1,1,0,1})
+
+        local is_collision = false
+
+        local block1 = logic_mod.Block:new('棒棒', 0, 5, 4);
         assert.is_true(block_equal(block1:GetBlockData(), 
                {0,1,0,0,
                 0,1,0,0,
                 0,1,0,0,
                 0,1,0,0}
             ))
-
-        local block1_rotate_left = block1:RotateLeft()
-        local block1_rotate_right = block1:RotateRight()
-
-        assert.is_true(block_equal(block1_rotate_left:GetBlockData(), 
-               block1_rotate_right:GetBlockData()));
-
-        assert.is_true(block_equal(block1_rotate_left:GetBlockData(), 
-                {0,0,0,0,
-                1,1,1,1,
-                0,0,0,0,
-                0,0,0,0}
-            ))
-
-        local block1_rotate_4times = block1:RotateLeft():RotateLeft():RotateLeft():RotateLeft()
-        assert.is_true(block_equal(block1:GetBlockData(), 
-               block1_rotate_4times:GetBlockData()));  
+        assert.is_false(board:IsCollision(block1))
+        
     end)
 end)
