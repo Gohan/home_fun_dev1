@@ -3,6 +3,7 @@ local game_control = nil
 local game_state = 'game_play'
 function love.load()
 	game_control = GameControlModule.GameControl:new()
+	game_control:BeginState()
 end
 
 function love.draw()
