@@ -377,4 +377,5 @@ end
 function Block:GetBlockData()
     return Blocks[self.Type].data[self.CurState+1]
 end
+
 return M
