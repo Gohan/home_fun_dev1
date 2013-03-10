@@ -27,6 +27,11 @@ local BlockType = {
     ['右Z'] = 7
 }
 
+BlockTypes = 
+{
+    '棒棒', '田格', 'T型', '左拐弯', '右拐弯', '左Z', '右Z'
+}
+
 local Blocks = {
     {
         desc = "棒棒",
@@ -72,7 +77,79 @@ local Blocks = {
             0,1,0,0,
             0,0,0,0}
         }
-    }
+    },
+
+    {
+        desc = "左拐弯",
+        data = {
+            {1,1,0,0,
+            0,1,0,0,
+            0,1,0,0,
+            0,0,0,0},
+            {0,0,1,0,
+            1,1,1,0,
+            0,0,0,0,
+            0,0,0,0},
+            {1,0,0,0,
+            1,0,0,0,
+            1,1,0,0,
+            0,0,0,0},
+            {1,1,1,0,
+            1,0,0,0,
+            0,0,0,0,
+            0,0,0,0}
+        }
+    },
+
+    {
+        desc = "右拐弯",
+        data = {
+            {1,1,0,0,
+            1,0,0,0,
+            1,0,0,0,
+            0,0,0,0},
+            {1,1,1,0,
+            0,0,1,0,
+            0,0,0,0,
+            0,0,0,0},
+            {0,1,0,0,
+            0,1,0,0,
+            1,1,0,0,
+            0,0,0,0},
+            {1,0,0,0,
+            1,1,1,0,
+            0,0,0,0,
+            0,0,0,0}
+        }
+    },
+    {
+        desc = "左Z",
+        data = {
+            {1,1,0,0,
+            0,1,1,0,
+            0,0,0,0,
+            0,0,0,0},
+            {0,1,0,0,
+            1,1,0,0,
+            1,0,0,0,
+            0,0,0,0}
+        }
+    },
+    {
+        desc = "右Z",
+        data = {
+            {0,1,1,0,
+            1,1,0,0,
+            0,0,0,0,
+            0,0,0,0},
+            {1,0,0,0,
+            1,1,0,0,
+            0,1,0,0,
+            0,0,0,0}
+        }
+    },
+
+
 }
 
 
@@ -332,7 +409,7 @@ Block =
     width = 4;
 }
 function Block:new(name, state, x, y)
-    o = {}
+    local o = {}
     setmetatable(o, self)
     self.__index = self  -- 没有在对象中找到条目时, 从元表中找它
     
@@ -340,6 +417,13 @@ function Block:new(name, state, x, y)
     if o.Type == nil then
         return
     end
+
+
+    if (Blocks[o.Type] == nil) then
+        -- print("Error "..o.Type.." 不存在")
+        return nil
+    end
+
 
     local StateCount = #Blocks[o.Type].data
     if StateCount == 0 then
@@ -352,8 +436,24 @@ function Block:new(name, state, x, y)
     return o
 end
 
+function Block:CreateBlockByType(type, state, x, y)
+    local o = {
+        Type = type,
+        CurState = state,
+        x = x,
+        y = y,
+    }
+    setmetatable(o, self)
+    self.__index = self  -- 没有在对象中找到条目时, 从元表中找它
+    return o
+end
+
+function Block:GetStateCount()
+    return #Blocks[self.Type].data
+end
+
 function Block:GetMove(direction)
-    local n = #Blocks[Type].data
+    local n = #Blocks[self.Type].data
     local state = self.state
     if (direction == 'L') then state = (state+n-1)%n
     elseif (direction == 'R') then state = (state+1)%n
@@ -365,17 +465,29 @@ end
 function Block:RotateLeft()
     local n = #Blocks[self.Type].data
     local state = (self.CurState+n-1)%n
-    return Block:new(self.name, state, self.x, self.y)
+    return self:CreateBlockByType(self.Type, state, self.x, self.y)
 end
 
 function Block:RotateRight()
     local n = #Blocks[self.Type].data
     local state = (self.CurState+1)%n
-    return Block:new(self.name, state, self.x, self.y)
+    return self:CreateBlockByType(self.Type, state, self.x, self.y)
 end
 
 function Block:GetBlockData()
     return Blocks[self.Type].data[self.CurState+1]
+end
+
+function Block:GetBlockPoints()
+    local data = Blocks[self.Type].data[self.CurState+1]
+    local ret = {}
+    for i = 1, #data do
+        if (data[i] == 1) then
+            block_x, block_y = IndexToXY(i, 4)
+            ret[#ret+1] = {x=self.x+block_x, y=self.y+block_y}
+        end
+    end
+    return ret
 end
 
 return M

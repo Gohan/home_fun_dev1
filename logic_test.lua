@@ -262,6 +262,35 @@ describe("logic_test", function()
                block1_rotate_4times:GetBlockData()));  
     end)
 
+    it("Block:CreateTurn2", function()
+        local logic_mod = require "logic"
+        -- 创建x=3, y=0的棒棒形状
+        local block1 = logic_mod.Block:new('左Z', 0, 3, 0);
+        assert.is_true(block_equal(block1:GetBlockData(), 
+            {1,1,0,0,
+            0,1,1,0,
+            0,0,0,0,
+            0,0,0,0}
+            ))
+
+        local block1_rotate_left = block1:RotateLeft()
+        local block1_rotate_right = block1:RotateRight()
+
+        assert.is_true(block_equal(block1_rotate_left:GetBlockData(), 
+               block1_rotate_right:GetBlockData()));
+
+        assert.is_true(block_equal(block1_rotate_left:GetBlockData(), 
+            {0,1,0,0,
+            1,1,0,0,
+            1,0,0,0,
+            0,0,0,0}
+            ))
+
+        local block1_rotate_4times = block1:RotateLeft():RotateLeft():RotateLeft():RotateLeft()
+        assert.is_true(block_equal(block1:GetBlockData(), 
+               block1_rotate_4times:GetBlockData()));  
+    end)
+
     it("Board:CheckCollision", function()
         local logic_mod = require "logic"
         -- 创建x=3, y=0的棒棒形状

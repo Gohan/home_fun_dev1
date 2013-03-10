@@ -1,6 +1,14 @@
 local GameControlModule = require 'control'
+local TestControlModule = require 'test_control'
+local GameView = require 'view'
+
 local game_control = nil
 local game_state = 'game_play'
+
+
+local test_control = nil
+local test_view = nil
+
 
 local TestStates =
 {
@@ -17,14 +25,22 @@ game_state for test:
 function love.load()
 	game_control = GameControlModule.GameControl:new()
 	game_control:BeginState()
+
+	test_control = TestControlModule.Control:new()
+	test_control:BeginState()
+	test_view = GameView.GamePlayView:new()
+	test_control:SetView(test_view)
 end
 
 function love.draw()
 	if game_state == 'game_play' then
 		game_control:draw()
+	elseif string.match(game_state, '_test$') then
+		test_control:draw(game_state)
 	end
+
+	-- 左上角显示gamestate
 	love.graphics.print(game_state, 0, 0)
-    love.graphics.print('Hello World!', 400, 300)
 end
 
 function love.update(dt)
@@ -32,6 +48,8 @@ function love.update(dt)
 	handle_test_state(dt)
 	if game_state == 'game_play' then
 		game_control:update(dt)
+	elseif string.match(game_state, '_test$') then
+		test_control:update(game_state, dt)
 	end
 end
 
@@ -42,9 +60,5 @@ function handle_test_state(dt)
 		if TestStates.index > #TestStates.states then
 			TestStates.index = 1
 		end
-	end
-	
-	print(game_state)
-	if state == 'block_test' then
 	end
 end
