@@ -6,3 +6,4 @@ all: test
 
 test:
 	busted logic_test.lua
+
