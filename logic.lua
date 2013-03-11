@@ -190,6 +190,18 @@ function Board:GetBlockData()
     return self.data
 end
 
+function Board:GetBlockPoints()
+    local data = self.data
+    local ret = {}
+    for i = 1, #data do
+        if (data[i] == 1) then
+            x, y = IndexToXY(i, self.width)
+            ret[#ret+1] = {x=y, y=y}
+        end
+    end
+    return ret
+end
+
 function Board:RemoveFullLine()
     local baseline = self.height-1
     for k = self.height-1, 0, -1 do
