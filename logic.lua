@@ -166,7 +166,10 @@ function Board:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self  -- 没有在对象中找到条目时, 从元表中找它
-    self:_reset_data()
+
+    -- 这里要置空, 否则创建的board对象会共享一个data表, 有趣
+    o.data = {}
+    o:_reset_data()
     return o
 end
 
@@ -176,9 +179,17 @@ function Board:SetWidth(val)
     self:_reset_data()
 end
 
+function Board:GetWidth()
+    return self.width
+end
+
 function Board:SetHeight(val)
     self.height = val
     self:_reset_data()
+end
+
+function Board:GetHeight()
+    return self.height
 end
 
 
@@ -196,7 +207,7 @@ function Board:GetBlockPoints()
     for i = 1, #data do
         if (data[i] == 1) then
             x, y = IndexToXY(i, self.width)
-            ret[#ret+1] = {x=y, y=y}
+            ret[#ret+1] = {x=x, y=y}
         end
     end
     return ret
