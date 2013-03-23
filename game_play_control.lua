@@ -198,11 +198,20 @@ function GamePlayControl:update(dt)
 		if self.dy ~= 0 then
 			if self.board:IsTouchBottom(self.block) then
 				self.board:AddBlock(self.block)
-				play_state = 'creating_block'
+				if self.board:HasFullLine() then
+					play_state = 'line_clear'
+				elseif self.block:GetBlockValidTop() < 0 then
+					play_state = 'game_over'
+				else
+					play_state = 'creating_block'
+				end
 			else
 				self.block.y = self.block.y + self.dy
 			end
 		end
+	elseif play_state == 'line_clear' then
+		self.board:RemoveFullLine3()
+		play_state = 'creating_block'
 	end
 
 	self.fps_count = self.fps_count + 1

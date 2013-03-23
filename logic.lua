@@ -554,6 +554,33 @@ function Block:GetBlockPoints()
     return ret
 end
 
+-- 返回当前块有效的bottom(不为0部分)
+function Block:GetBlockValidBottom()
+    local data = self:GetBlockData()
+    local width = self.width
+    for iter_y = math.floor((#data-1) / width), 0, -1 do
+        for iter_x = width-1, 0, -1 do
+            local index = XYtoIndex(iter_x, iter_y, width)
+            if data[index] ~= 0 then
+                return iter_y+self.y
+            end
+        end
+    end
+end
+
+function Block:GetBlockValidTop()
+    local data = self:GetBlockData()
+    local width = self.width
+    for iter_y = 0, math.floor((#data-1) / width) do
+        for iter_x = width-1, 0, -1 do
+            local index = XYtoIndex(iter_x, iter_y, width)
+            if data[index] ~= 0 then
+                return iter_y+self.y
+            end
+        end
+    end
+end
+
 function Block:_debug_print_data()
     print("========_debug_print_data========")
     str = ""
