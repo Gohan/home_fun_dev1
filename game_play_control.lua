@@ -12,6 +12,7 @@ local assert = assert
 local math = require "math"
 local logic = require "logic"
 local misc = require "misc"
+local os = require "os"
 local ipairs = ipairs
 local love = love
 local string = string
@@ -77,6 +78,9 @@ function GamePlayControl:BeginState()
 	self.board:SetWidth(8)
 	self.board:SetHeight(12)
 
+	local time = os.time()
+	print(time)
+	math.randomseed(1364049727)
 end
 
 function GamePlayControl:SetView(view)
@@ -133,8 +137,9 @@ local play_state = 'creating_block'
 
 function GamePlayControl:CreateBlock()
 	-- 暂时不随机
-	print(logic.BlockTypes[3])
-	return logic.Block:new(logic.BlockTypes[3], 0, 0, 0)
+	local type = math.ceil(math.random()*7)
+	print(logic.BlockTypes[type])
+	return logic.Block:new(logic.BlockTypes[type], 0, 0, 0)
 end
 
 -- 游戏中的绘制的处理
@@ -195,7 +200,9 @@ function GamePlayControl:update(dt)
 			self.block.x = self.block.x - self.dx
 		end
 
-		if self.dy ~= 0 then
+		self.dy = self.dy * 2
+		assert(self.dy >= 0)
+		while self.dy ~= 0 do
 			if self.board:IsTouchBottom(self.block) then
 				self.board:AddBlock(self.block)
 				if self.board:HasFullLine() then
@@ -205,12 +212,38 @@ function GamePlayControl:update(dt)
 				else
 					play_state = 'creating_block'
 				end
+				break;
 			else
-				self.block.y = self.block.y + self.dy
+				self.block.y = self.block.y + 1
+				self.dy = self.dy - 1
 			end
 		end
+
+		-- Buggy code
+		-- if self.dy ~= 0 then
+		-- 	if self.board:IsTouchBottom(self.block) then
+		-- 		self.board:AddBlock(self.block)
+		-- 		if self.board:HasFullLine() then
+		-- 			play_state = 'line_clear'
+		-- 		elseif self.block:GetBlockValidTop() < 0 then
+		-- 			play_state = 'game_over'
+		-- 		else
+		-- 			play_state = 'creating_block'
+		-- 		end
+		-- 	else
+		-- 		self.block.y = self.block.y + self.dy
+		-- 	end
+		-- end
 	elseif play_state == 'line_clear' then
 		self.board:RemoveFullLine3()
+		play_state = 'creating_block'
+	elseif play_state == 'game_over' then
+		if self.IsKeyDown[' '](dt) then
+			play_state = 'restart_game'
+		end
+	elseif play_state == 'restart_game' then
+		self:BeginState()
+		self:SetView(self.view)
 		play_state = 'creating_block'
 	end
 
