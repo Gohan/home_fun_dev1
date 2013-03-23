@@ -42,4 +42,24 @@ function Misc.CreateTriggerChecker(interval, is_trigger_now)
 	return f
 end
 
+-- IsKeyValid
+function Misc.IsKeyValid(key, cooldown)
+	local holdtime = 0
+	f = function (dt)
+		if love.keyboard.isDown(key) then
+			if holdtime == 0 or holdtime > cooldown then
+				holdtime = dt
+				return true
+			else
+				holdtime = holdtime + dt
+				return false
+			end
+		elseif holdtime ~= 0 then
+			holdtime = 0
+		end
+		return false
+	end
+	return f
+end
+
 return M

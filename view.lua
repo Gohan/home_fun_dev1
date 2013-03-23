@@ -60,6 +60,9 @@ function GamePlayView:DrawOnePoint( x, y )
 end
 
 function GamePlayView:DrawBlock(block)
+
+	local height_diff = BOARD_HEIGHT - self.board:GetHeight()
+
 	-- 绘制10*10的网格
 	love.graphics.setLine(1, "smooth")
 	love.graphics.setColor(LINE_COLOR);
@@ -81,7 +84,7 @@ function GamePlayView:DrawBlock(block)
 	love.graphics.setColor(BLOCK_COLOR);
 	local points = block:GetBlockPoints()
 	for i = 1, #points do
-		self:DrawOnePoint(points[i].x, points[i].y)
+		self:DrawOnePoint(points[i].x, points[i].y + height_diff)
 	end
 
 	love.graphics.setColor(255, 255, 255, 255);	
@@ -89,7 +92,7 @@ end
 
 function GamePlayView:DrawBoard(board)
 
-	local height_diff = BOARD_HEIGHT - board:GetWidth()
+	local height_diff = BOARD_HEIGHT - board:GetHeight()
 
 	-- 绘制10*10的网格
 	love.graphics.setLine(1, "smooth")

@@ -23,11 +23,14 @@ game_state for test:
 ]]--
 
 function love.load()
+	test_view = GameView.GamePlayView:new()
 	game_control = GameControlModule.GameControl:new()
 	game_control:BeginState()
+	game_control:SetView(test_view)
 
 	test_control = TestControlModule.Control:new()
 	test_control:BeginState()
+
 	test_view = GameView.GamePlayView:new()
 	test_control:SetView(test_view)
 end

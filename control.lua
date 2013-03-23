@@ -10,6 +10,8 @@ local setmetatable = setmetatable
 local print = print
 local assert = assert
 local math = require "math"
+local LogicMod = require "logic"
+local GamePlayerControlMod = require "game_play_control"
 local ipairs = ipairs
 local love = love
 local string = string
@@ -54,6 +56,7 @@ GameControl = {
 	IsKeyDown = { 
 		['left'] = IsKeyValid('left', settings_cooldown_time),
 		['right'] = IsKeyValid('right', settings_cooldown_time),
+		['return'] = IsKeyValid('return', settings_cooldown_time),
 	},
 	left,
 	right,
@@ -62,12 +65,12 @@ GameControl = {
 	block_creator, -- 用来创建block的函数
 	view, -- view对象(视图类, 用于绘制游戏)
 	board, -- board对象(用于存放游戏数据)
+	game_state,
+	game_play_control = nil,
 	-- 当前方块信息
-	active_block, -- 当前活跃的方块
 	dx = 0,
 	dy = 0,
 	falling_speed_per_frame = 1/FPS, -- Speed/FPS, holdtime = FPS/Speed
-	falling_max_speed_flag = 0, -- 如果不为0说明按了向下的按键, 全速下降
 	falling_count = 0,
 	-- 计算fps
 	fps = 0,
@@ -83,15 +86,22 @@ function GameControl:new(o)
 end
 
 function GameControl:BeginState()
+	self.game_play_control = GamePlayerControlMod.GamePlayControl:new()
+	self.game_play_control.board = LogicMod.Board:new()
+	self.game_play_control.board:SetWidth(8)
+	self.game_play_control.board:SetHeight(12)
     next_time = love.timer.getMicroTime()
+    self.game_state = 'title'
 end
 
 function GameControl:SetView(view)
 	self.view = view
+	self.game_play_control:SetView(view)
 end
 
 function GameControl:SetBoard(board)
 	self.board = board
+	self.game_play_control:SetBoard(board)
 end
 
 function GameControl:GetFallingDy(dt)
@@ -131,10 +141,17 @@ function GameControl:update(dt)
 	-- 帧率控制
 	next_time = next_time + MIN_DT 
 
+	if self.game_state == 'title' then
+		self:CalculateDxAndDy(dt)
+	elseif self.game_state == 'game_play' then
+		self.game_play_control:update(dt)
+	end
 	-- 动态检查一些游戏输入
 	-- ticktime = ticktime + dt
-	self:CalculateDxAndDy(dt)
-
+	
+	if self.IsKeyDown['return'](dt) then
+		self.game_state = 'game_play'
+	end
 	-- self.fps_count = self.fps_count + 1
 	-- 
 	--love.timer.step()
@@ -155,19 +172,22 @@ function GameControl:draw()
 		end
 		return 'false'
 	end
-	-- 做了view实现后就可以直接这么写了(view和board/block结构绑定)
-	-- self.game_view.draw()
-    love.graphics.print('Hello World!'..
-						'left:'..tostring(self.left)..
-						'  right:'..tostring(self.right)..'\n'..
-						self.dx..'\n'..
-						self.dy..'\n'..
-						self.falling_count..'\n'..
-						'fps:'..self.fps, 400, 300)
-    if self.view then
-	    self.view:draw_board(self.board)
-	    self.view:draw_block(self.block)
+
+	if self.game_state == 'title' then
+		-- 做了view实现后就可以直接这么写了(view和board/block结构绑定)
+		-- self.game_view.draw()
+	    love.graphics.print('Hello World!'..
+							'left:'..tostring(self.left)..
+							'  right:'..tostring(self.right)..'\n'..
+							self.dx..'\n'..
+							self.dy..'\n'..
+							self.falling_count..'\n'..
+							'fps:'..self.fps, 400, 300)
+
+	elseif self.game_state == 'game_play' then
+			self.game_play_control:draw()
 	end
+
 
 	-- 帧率控制
 	local cur_time = love.timer.getMicroTime()

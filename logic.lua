@@ -16,13 +16,12 @@ local ipairs = ipairs
 --
 setfenv(1, M)
 
-
 local BlockType = {
     ['棒棒'] = 1, 
     ['田格'] = 2, 
     ['T型'] = 3, 
     ['左拐弯'] = 4,
-    ['右拐弯'] = 5, 
+    ['右拐弯'] = 5,
     ['左Z'] = 6, 
     ['右Z'] = 7
 }
@@ -159,7 +158,7 @@ Board = {
     width = 8,
     height = 8,
     config = {
-        ["debug_output"] = false,
+        ["debug_output"] = true,
     },
 }
 function Board:new(o)
@@ -355,7 +354,7 @@ function Board:AddBlockByData(data)
         self.data[i] = data[i]
     end
 
-    self:_debug_print_data()
+    -- self:_debug_print_data()
 end
 
 function Board:IsSolid(x, y)
@@ -364,8 +363,9 @@ function Board:IsSolid(x, y)
 end
 
 function Board:IsOutOfRange(x, y)
+    --  y < 0 被认为是有效的
     if x >= self.width or x < 0 or 
-       y >= self.height or y < 0 then
+       y >= self.height then
         return true
     end
     return false
@@ -398,16 +398,54 @@ function Board:CheckPolish2()
     return ret
 end
 
+-- 判断一个data(block)是否触底
+-- TODO: 应该写测试用例
+function Board:IsTouchBottomByBlockData(data, width, x, y)
+    for iter_x = width-1, 0, -1 do
+        for iter_y = math.floor((#data-1) / width), 0, -1 do
+            local index = XYtoIndex(iter_x, iter_y, width)
+            if data[index] ~= 0 then
+                if self:IsOutOfRange(iter_x+x, iter_y+y+1)
+                   or (self.data[XYtoIndex(iter_x + x, iter_y + y + 1, self.width)] ~= 0 
+                       and iter_y + y + 1 >= 0) then
+                    return true
+                end
+                break
+            end
+        end
+    end
+    return false
+end
+
+function Board:IsTouchBottom(block)
+    return self:IsTouchBottomByBlockData(
+        block:GetBlockData(), 
+        block.width, 
+        block.x, 
+        block.y)
+end
+
+function Board:IsOutOfBoardByBlockData(data, width, x, y)
+    return nil
+end
+
+function Board:IsOutOfBoard(block)
+    return self:IsOutOfBoardByBlockData(
+        block:GetBlockData(), 
+        block.width, 
+        block.x, 
+        block.y)
+end
+
 function Board:IsCollisionByBlockData(data, width, x, y)
     for i=1, #data do
         if data[i] ~= 0 then
-            dx, dy = IndexToXY(i, width)
-
+            local dx, dy = IndexToXY(i, width)
             local bx, by = x+dx, y+dy
             if self:IsOutOfRange(bx, by) then 
-                -- print('collision at x:'..x+dx..' y:'..y+dy..'\n')
+                print('collision at x:'..x+dx..' y:'..y+dy..'\n')
                 return true
-            else
+            elseif by >= 0 then
                 index = XYtoIndex(x+dx, y+dy, self.width)
                 if self.data[index] ~= 0 then
                     -- print('collision at x:'..x+dx..' y:'..y+dy..'\n')
@@ -422,6 +460,8 @@ end
 function Board:IsCollision(block)
     return self:IsCollisionByBlockData(block:GetBlockData(), block.width, block.x, block.y)
 end
+
+
 
 Block =
 {
@@ -456,6 +496,7 @@ function Block:new(name, state, x, y)
     o.CurState = state % StateCount
     o.x = x
     o.y = y
+    print(o.CurState..o.x..o.y..StateCount)
     return o
 end
 
@@ -511,6 +552,19 @@ function Block:GetBlockPoints()
         end
     end
     return ret
+end
+
+function Block:_debug_print_data()
+    print("========_debug_print_data========")
+    str = ""
+    for i,v in ipairs(self:GetBlockData()) do
+        str = str..v
+        if (i % self.width == 0) then
+            print(str)
+            str = ""
+        end
+    end
+    print("========_debug_print_data (end)========")
 end
 
 return M
